@@ -7,6 +7,8 @@ GRID_HEIGHT = 20                        # Number of cells in the height
 WIDTH = GRID_WIDTH * CELL_SIZE          # Game window width
 HEIGHT = GRID_HEIGHT * CELL_SIZE        # Game window height
 
+N_SCORES = 5                            # Number of high scores saved
+
 FPS = 10
 
 # Colors

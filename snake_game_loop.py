@@ -109,6 +109,7 @@ def menu_start(screen: pygame.Surface, font: pygame.font.SysFont, clock: pygame.
         buttons = {
             'Play': main_game_loop,
             'Settings': menu_setting,
+            'High Scores': print_high_scores,
             'Quit': quit_game
         }
         # Initilize the buttonpanel
@@ -121,6 +122,29 @@ def menu_start(screen: pygame.Surface, font: pygame.font.SysFont, clock: pygame.
         buttonhandler.assing_event(definedbutton)
 
         pygame.display.update()
+
+def print_high_scores(screen: pygame.Surface, font: pygame.font.SysFont, clock: pygame.time.Clock):
+    high_scores = read_high_scores()
+    buttonhandler = ButtonEventHandler(screen, font, clock)
+    while True:
+        screen.fill(BG)
+        mouse = pygame.mouse.get_pos()
+
+        for i in range(N_SCORES):
+            draw_text(font, screen, f"{high_scores[0][i]}   {high_scores[1][i]}", GREEN, WIDTH // 2 - 90, HEIGHT // 2 - 160 + i*30)
+
+
+        buttons = {
+            'Return': menu_start,
+        }
+
+        buttonpanel = ButtonPanel(screen, font, clock, mouse)
+        definedbutton = buttonpanel.define_buttons(buttons)
+        buttonpanel.draw_buttons(definedbutton, buttonhandler.selected_index)
+        buttonhandler.assing_event(definedbutton)
+
+        pygame.display.update()
+
 
 def menu_setting(screen: pygame.Surface, font: pygame.font.SysFont, clock: pygame.time.Clock):
     buttonhandler = ButtonEventHandler(screen, font, clock)
@@ -150,6 +174,12 @@ def menu_setting(screen: pygame.Surface, font: pygame.font.SysFont, clock: pygam
 
 
 def main_game_loop(screen: pygame.Surface, font: pygame.font.SysFont, clock: pygame.time.Clock) -> None:
+    # Ask for player name and read the high scores file
+    high_scores = read_high_scores()
+    player_name = insert_player_name(screen, font, clock)
+    if player_name == None:
+        return
+
     # Initialization of snake first position, first direction, food position and score = 0
     snake, direction, food, score = reset_game()
 
@@ -178,13 +208,13 @@ def main_game_loop(screen: pygame.Surface, font: pygame.font.SysFont, clock: pyg
                         pygame.quit()
                         sys.exit()
                 else:
-                    if event.key == pygame.K_UP and direction != (0, 1):
+                    if ( event.key == pygame.K_UP or event.key == pygame.K_w ) and direction != (0, 1):
                         direction = (0, -1)
-                    elif event.key == pygame.K_DOWN and direction != (0, -1):
+                    elif ( event.key == pygame.K_DOWN or event.key == pygame.K_s ) and direction != (0, -1):
                         direction = (0, 1)
-                    elif event.key == pygame.K_LEFT and direction != (1, 0):
+                    elif ( event.key == pygame.K_LEFT or event.key == pygame.K_a ) and direction != (1, 0):
                         direction = (-1, 0)
-                    elif event.key == pygame.K_RIGHT and direction != (-1, 0):
+                    elif ( event.key == pygame.K_RIGHT or event.key == pygame.K_d ) and direction != (-1, 0):
                         direction = (1, 0)
 
         if not game_over:
@@ -216,9 +246,12 @@ def main_game_loop(screen: pygame.Surface, font: pygame.font.SysFont, clock: pyg
                 else:
                     snake.pop()
 
+            if game_over:
+                save_high_score(player_name, score, high_scores)
+
         # Background design
         screen.fill(BLACK)
-        chess_background(screen, BLACK, )
+        chess_background(screen, [BLACK])
 
         # Food design
         pygame.draw.rect(
